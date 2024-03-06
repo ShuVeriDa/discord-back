@@ -5,11 +5,10 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver } from '@nestjs/apollo';
-import { ServerService } from './server/server.service';
-import { ServerResolver } from './server/server.resolver';
 import { ProfileModule } from './profile/profile.module';
 import { MemberModule } from './member/member.module';
 import * as process from 'process';
+import { ServerModule } from './server/server.module';
 
 @Module({
   imports: [
@@ -30,12 +29,11 @@ import * as process from 'process';
         };
       },
     }),
-
     ProfileModule,
-
     MemberModule,
+    ServerModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ServerService, ServerResolver],
+  providers: [AppService],
 })
 export class AppModule {}

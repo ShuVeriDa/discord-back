@@ -7,10 +7,10 @@ import { GraphQLError } from 'graphql/error';
 
 @Injectable()
 export class ServerService {
-  constructor(private readonly prismaa: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async createServer(input: CreateServerDto, imageUrl: string) {
-    const profile = await this.prismaa.profile.findUnique({
+    const profile = await this.prisma.profile.findUnique({
       where: {
         id: input.profileId,
       },
@@ -18,7 +18,7 @@ export class ServerService {
 
     if (!profile) throw new BadRequestException('Profile not found');
 
-    return this.prismaa.server.create({
+    return this.prisma.server.create({
       data: {
         ...input,
         imageUrl: imageUrl,
@@ -48,7 +48,7 @@ export class ServerService {
   }
 
   async getServer(id: number, email: string) {
-    const profile = await this.prismaa.profile.findUnique({
+    const profile = await this.prisma.profile.findUnique({
       where: { email },
     });
 
@@ -57,7 +57,7 @@ export class ServerService {
         extensions: { code: 'PROFILE_NOT_FOUND' },
       });
 
-    const server = await this.prismaa.server.findUnique({
+    const server = await this.prisma.server.findUnique({
       where: {
         id,
         members: {
@@ -77,7 +77,7 @@ export class ServerService {
   }
 
   async gerServersByProfileEmailOfMember(email: string) {
-    return this.prismaa.server.findMany({
+    return this.prisma.server.findMany({
       where: {
         members: {
           some: {
