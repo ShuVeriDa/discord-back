@@ -30,6 +30,17 @@ export class ServerResolver {
     );
   }
 
+  @Query(() => [Server])
+  async getServer(@Context() ctx: { req: Request }, @Args('id') id: number) {
+    // if (!ctx.req?.profile.email) {
+    //   return new GraphQLError('Profile not found', {
+    //     extensions: { code: 'PROFILE_NOT_FOUND' },
+    //   });
+    // }
+
+    return await this.serverService.getServer(id, ctx.req?.profile.email);
+  }
+
   @Mutation(() => Server)
   async createServer(
     @Args('input') input: CreateServerDto,

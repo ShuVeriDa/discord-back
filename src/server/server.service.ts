@@ -66,6 +66,10 @@ export class ServerService {
           },
         },
       },
+      include: {
+        channels: true,
+        members: true,
+      },
     });
 
     if (!server)
