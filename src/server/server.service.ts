@@ -15,13 +15,12 @@ export class ServerService {
         id: input.profileId,
       },
     });
-
     if (!profile) throw new BadRequestException('Profile not found');
 
     return this.prisma.server.create({
       data: {
         ...input,
-        imageUrl: imageUrl,
+        imageUrl,
         inviteCode: uuidv4(),
 
         channels: {
@@ -41,6 +40,7 @@ export class ServerService {
           ],
         },
       },
+
       include: {
         members: true,
       },
@@ -76,8 +76,8 @@ export class ServerService {
     return server;
   }
 
-  async gerServersByProfileEmailOfMember(email: string) {
-    return this.prisma.server.findMany({
+  async getServersByProfileEmailOfMember(email: string) {
+    return await this.prisma.server.findMany({
       where: {
         members: {
           some: {

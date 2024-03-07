@@ -12,7 +12,6 @@ export class ProfileService {
         email: createProfileDto.email,
       },
     });
-
     if (profile) {
       return profile;
     }

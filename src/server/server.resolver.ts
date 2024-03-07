@@ -1,4 +1,4 @@
-import { Resolver, Query, Context, Args, Mutation } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Server } from './types';
 import { Request } from 'express';
 import { Injectable, UseGuards } from '@nestjs/common';
@@ -8,7 +8,6 @@ import { ServerService } from './server.service';
 import { CreateServerDto } from './dto';
 import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
 import { v4 as uuidv4 } from 'uuid';
-import * as process from 'process';
 import { join } from 'path';
 import { createWriteStream, existsSync, mkdir, mkdirSync } from 'fs';
 
@@ -20,12 +19,13 @@ export class ServerResolver {
 
   @Query(() => [Server])
   async getServers(@Context() ctx: { req: Request }) {
-    if (!ctx.req?.profile.email)
-      return new GraphQLError('Profile not found', {
-        extensions: { code: 'PROFILE_NOT_FOUND' },
-      });
+    // if (!ctx.req?.profile.email) {
+    //   return new GraphQLError('Profile not found', {
+    //     extensions: { code: 'PROFILE_NOT_FOUND' },
+    //   });
+    // }
 
-    return this.serverService.gerServersByProfileEmailOfMember(
+    return await this.serverService.getServersByProfileEmailOfMember(
       ctx.req?.profile.email,
     );
   }
@@ -36,6 +36,11 @@ export class ServerResolver {
     @Args('file', { type: () => GraphQLUpload, nullable: true })
     file: GraphQLUpload,
   ) {
+    if (!file)
+      throw new GraphQLError('Image is required', {
+        extensions: { code: 'IMAGE_REQUIRED' },
+      });
+
     const imageUrl = await this.storeImageAndGetUrl(file);
 
     return this.serverService.createServer(input, imageUrl);

@@ -7,7 +7,6 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver } from '@nestjs/apollo';
 import { ProfileModule } from './profile/profile.module';
 import { MemberModule } from './member/member.module';
-import * as process from 'process';
 import { ServerModule } from './server/server.module';
 
 @Module({
