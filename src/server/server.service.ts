@@ -1,9 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { CreateServerDto } from './dto';
+import {
+  CreateChannelOnServerDto,
+  CreateServerDto,
+  UpdateServerDto,
+} from './dto';
 import { v4 as uuidv4 } from 'uuid';
 import { MemberRole } from '../member/member.types';
 import { GraphQLError } from 'graphql/error';
+import { ChannelType } from './types';
 
 @Injectable()
 export class ServerService {
@@ -81,13 +86,87 @@ export class ServerService {
   }
 
   async getServersByProfileEmailOfMember(email: string) {
-    return await this.prisma.server.findMany({
+    return this.prisma.server.findMany({
       where: {
         members: {
           some: {
             profile: {
               email,
             },
+          },
+        },
+      },
+    });
+  }
+
+  async updateServerWithNewInviteCode(serverId: number) {
+    const server = await this.prisma.server.findUnique({
+      where: {
+        id: serverId,
+      },
+    });
+
+    if (!server) throw new Error('Server not found');
+
+    return this.prisma.server.update({
+      where: {
+        id: serverId,
+      },
+      data: {
+        inviteCode: uuidv4(),
+      },
+    });
+  }
+
+  async updateServer(input: UpdateServerDto, imageUrl: string) {
+    const server = await this.prisma.server.findUnique({
+      where: {
+        id: input.serverId,
+      },
+    });
+
+    if (!server) throw Error('Server not found');
+
+    return this.prisma.server.update({
+      where: {
+        id: server.id,
+      },
+      data: {
+        name: input.name,
+        imageUrl,
+      },
+    });
+  }
+
+  async createChannel(input: CreateChannelOnServerDto, email: string) {
+    if (!input.name) throw new Error('Channel name is required');
+
+    const profile = await this.prisma.profile.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!profile) throw new Error('Profile not found');
+
+    return this.prisma.server.update({
+      where: {
+        id: input.serverId,
+        members: {
+          some: {
+            profileId: profile.id,
+            role: {
+              in: [MemberRole.ADMIN, MemberRole.MODERATOR],
+            },
+          },
+        },
+      },
+      data: {
+        channels: {
+          create: {
+            name: input.name,
+            profileId: profile.id,
+            type: ChannelType[input.type],
           },
         },
       },

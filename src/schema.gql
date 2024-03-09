@@ -3,12 +3,12 @@
 # ------------------------------------------------------
 
 type Channel {
-  createdAt: String!
+  createdAt: String
   id: Float!
   members: [Member!]
   name: String
   type: ChannelType!
-  updatedAt: String!
+  updatedAt: String
 }
 
 """Defines the type of channel"""
@@ -16,6 +16,12 @@ enum ChannelType {
   AUDIO
   TEXT
   VIDEO
+}
+
+input CreateChannelOnServerDto {
+  name: String!
+  serverId: Float
+  type: String!
 }
 
 input CreateProfileDto {
@@ -50,8 +56,11 @@ enum MemberRole {
 }
 
 type Mutation {
+  createChannel(input: CreateChannelOnServerDto!): Server!
   createProfile(input: CreateProfileDto!): Profile!
   createServer(file: Upload, input: CreateServerDto!): Server!
+  updateServer(file: Upload, input: UpdateServerDto!): Server!
+  updateServerWithNewInviteCode(serverId: Float): Server!
 }
 
 type Profile {
@@ -70,7 +79,7 @@ type Query {
 }
 
 type Server {
-  channels: [Channel]
+  channels: [Channel!]!
   id: Float!
   imageUrl: String!
   inviteCode: String
@@ -78,6 +87,11 @@ type Server {
   name: String!
   profile: Profile
   profileId: String!
+}
+
+input UpdateServerDto {
+  name: String!
+  serverId: Float
 }
 
 """The `Upload` scalar type represents a file upload."""

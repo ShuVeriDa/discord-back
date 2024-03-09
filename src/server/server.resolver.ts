@@ -5,7 +5,11 @@ import { Injectable, UseGuards } from '@nestjs/common';
 import { GraphqlAuthGuard } from '../auth/auth.guard';
 import { GraphQLError } from 'graphql/error';
 import { ServerService } from './server.service';
-import { CreateServerDto } from './dto';
+import {
+  CreateChannelOnServerDto,
+  CreateServerDto,
+  UpdateServerDto,
+} from './dto';
 import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
 import { v4 as uuidv4 } from 'uuid';
 import { join } from 'path';
@@ -70,5 +74,58 @@ export class ServerResolver {
     const readStream = createReadStream();
     readStream.pipe(createWriteStream(imagePath));
     return imageUrl;
+  }
+
+  @Mutation(() => Server)
+  async updateServer(
+    @Args('input') input: UpdateServerDto,
+    @Args('file', { type: () => GraphQLUpload, nullable: true })
+    file: GraphQLUpload,
+  ) {
+    let imageUrl;
+
+    if (file) {
+      imageUrl = await this.storeImageAndGetUrl(file);
+    }
+
+    try {
+      return this.serverService.updateServer(input, imageUrl);
+    } catch (error) {
+      throw new GraphQLError(error.message, {
+        extensions: { code: error.code },
+      });
+    }
+  }
+
+  @Mutation(() => Server)
+  async updateServerWithNewInviteCode(
+    @Args('serverId', { nullable: true }) serverId: number,
+  ) {
+    if (!serverId)
+      throw new GraphQLError('Server id is required', {
+        extensions: { code: 'SERVER_ID_REQUIRED' },
+      });
+
+    try {
+      return this.serverService.updateServerWithNewInviteCode(serverId);
+    } catch (error) {
+      throw new GraphQLError(error.message, {
+        extensions: { code: error.code },
+      });
+    }
+  }
+
+  @Mutation(() => Server)
+  async createChannel(
+    @Args('input') input: CreateChannelOnServerDto,
+    @Context() ctx: { req: Request },
+  ) {
+    try {
+      return this.serverService.createChannel(input, ctx.req?.profile.email);
+    } catch (error) {
+      throw new GraphQLError(error.message, {
+        extensions: { code: error.code },
+      });
+    }
   }
 }
